@@ -1,0 +1,79 @@
+.description-text a {
+    color: #10b981; /* آبی */
+    text-decoration: none;
+  }
+  
+  .description-text a:hover {
+    color: #16e465; /* آبی پررنگ‌تر هنگام هاور */
+    text-decoration: underline;
+  }
+  .description-text {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .description-text1 {
+    max-height: 320px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .description-text1.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 100%);
+  }
+  
+  .description-text1.expanded {
+    max-height: none;
+  }
+  
+  .description-text.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 100%);
+  }
+  
+  .description-text.expanded {
+    max-height: none;
+  }
+  /* Chart Placeholder */
+.chart-placeholder {
+  color: #6b7280; /* خاکستری */
+  text-align: center;
+}
+
+/* Sentiment Styling */
+.sentiment-positive {
+  color: #16a34a; /* سبز */
+  font-weight: bold;
+}
+.sentiment-negative {
+  color: #dc2626; /* قرمز */
+  font-weight: bold;
+}
+
+/* Market Table */
+.market-table th, .market-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.market-table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+.market-table a {
+  color: #3b82f6; /* آبی */
+  text-decoration: underline;
+}
