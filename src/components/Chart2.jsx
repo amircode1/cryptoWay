@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { createChart, CrosshairMode } from "lightweight-charts";
+import PropTypes from "prop-types";
+import { useEffect, useRef } from "react";
+import { CandlestickSeries, CrosshairMode, createChart } from "lightweight-charts";
 import { useChartQuery } from "../queries/useQuery";
 import Skeleton from "react-loading-skeleton"; // اضافه کردن Skeleton
 import "react-loading-skeleton/dist/skeleton.css";
@@ -18,7 +19,7 @@ const Chart2 = ({ coinId, timeFrame }) => {
         width: chartContainerRef.current.clientWidth,
         height: 400,
         layout: {
-          backgroundColor: "#ffffff",
+          background: { color: "#ffffff" },
           textColor: "#333",
         },
         grid: {
@@ -42,7 +43,7 @@ const Chart2 = ({ coinId, timeFrame }) => {
         },
       });
 
-      candleSeriesRef.current = chartRef.current.addCandlestickSeries({
+      candleSeriesRef.current = chartRef.current.addSeries(CandlestickSeries, {
         upColor: "#26a69a",
         downColor: "#ef5350",
         borderDownColor: "#ef5350",
@@ -104,6 +105,11 @@ const Chart2 = ({ coinId, timeFrame }) => {
       role="img"
     />
   );
+};
+
+Chart2.propTypes = {
+  coinId: PropTypes.string.isRequired,
+  timeFrame: PropTypes.string.isRequired,
 };
 
 export default Chart2;

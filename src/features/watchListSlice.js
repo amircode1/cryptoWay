@@ -12,6 +12,9 @@ const watchlistSlice = createSlice({
     removeFromWatchlist: (state, action) => {
       return state.filter((item) => item.id !== action.payload.id);
     },
+    loadState: (state, action) => {
+      return Array.isArray(action.payload) ? action.payload : state;
+    },
   },
 });
 

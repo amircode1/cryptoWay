@@ -1,5 +1,7 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import ChangeBadge from './ui/ChangeBadge';
+import { formatUsd } from '../utils/format';
 
 function CardTrending({ title, coins }) {
   if (!coins) {
@@ -11,23 +13,28 @@ function CardTrending({ title, coins }) {
   }
 
   return (
-    <div className="bg-slate-50 rounded-lg shadow-md p-4 w-80 h-full">
-      <h2 className="font-semibold text-lg text-gray-900 mb-4">{title}</h2>
-      <ul className="space-y-2">
+    <div className="bg-white rounded-xl border-2 border-emerald-300 shadow-card p-4 w-full h-full flex flex-col transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5">
+      <h2 className="font-semibold text-lg text-gray-900 mb-4 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        {title}
+      </h2>
+      <ul className="space-y-2 flex-1">
         {coins.map((coin, index) => (
-          <li key={index} className="flex items-center justify-between text-gray-700 p-2 rounded-lg hover:bg-green-100">
-            <div className="flex items-center gap-2">
-              <img src={coin.item.small} alt={`${coin.item.name} icon`} className="w-6 h-6" />
-              <Link to={`/${coin.item.id}`} className="font-semibold text-gray-900 hover:text-emerald-500">{coin.item.name}</Link>
+          <li
+            key={index}
+            className="flex items-center justify-between text-gray-700 p-2 rounded-lg hover:bg-emerald-50 transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {coin.item?.small && (
+                <img src={coin.item.small} alt={`${coin.item.name} icon`} className="w-6 h-6 rounded-full" />
+              )}
+              <Link to={`/${coin.item.id}`} className="font-semibold text-gray-900 hover:text-emerald-500 truncate">
+                {coin.item.name}
+              </Link>
             </div>
-            <div className="flex flex-col items-end">
-              <span className="font-medium text-gray-900">
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(coin.item.data.price || 0)}
-              </span>
-              <span className={`text-sm ${coin.item.data.price_change_percentage_24h.usd > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {Math.abs(coin.item.data.price_change_percentage_24h.usd).toFixed(2)}% 
-                {coin.item.data.price_change_percentage_24h.usd > 0 ? '▲' : '▼'}
-              </span>
+            <div className="flex flex-col items-end shrink-0 gap-1">
+              <span className="font-medium text-gray-900 text-sm">{formatUsd(coin.item?.data?.price || 0)}</span>
+              <ChangeBadge value={coin.item?.data?.price_change_percentage_24h?.usd} />
             </div>
           </li>
         ))}
@@ -35,5 +42,10 @@ function CardTrending({ title, coins }) {
     </div>
   );
 }
+
+CardTrending.propTypes = {
+  title: PropTypes.string.isRequired,
+  coins: PropTypes.array,
+};
 
 export default CardTrending;

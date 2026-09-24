@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 function SearchResults({ results }) {
@@ -20,5 +20,9 @@ function SearchResults({ results }) {
         </div>
     );
 }
+
+SearchResults.propTypes = {
+  results: PropTypes.object,
+};
 
 export default SearchResults;

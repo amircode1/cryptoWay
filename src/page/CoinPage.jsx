@@ -7,6 +7,11 @@ import Sentiment from '../components/Sentiment';
 import MarketTable from '../components/MarketTable';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Card from '../components/ui/Card';
+import StatCard from '../components/ui/StatCard';
+import Chip from '../components/ui/Chip';
+import ChangeBadge from '../components/ui/ChangeBadge';
+import { formatPrice, formatNumber } from '../utils/format';
 import './style.css';
 
 import Skeleton from 'react-loading-skeleton';
@@ -17,29 +22,17 @@ function CoinsPage() {
   const { web_slug } = useParams();
   const { data: coin, isLoading, isError, error } = useCoinsQuery(web_slug);
 
-  console.log('Component render:', { web_slug, isLoading, isError, coin });
-
-  // ساده‌سازی توابع فرمت‌کننده
-  const formatPrice = (price) => {
-    if (!price) return '0.00';
-    return price.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
-
-  const formatNumber = (num) => {
-    if (!num) return '0';
-    return num.toLocaleString('en-US');
+  const renderSanitizedHTML = (htmlContent) => {
+    const sanitizedContent = DOMPurify.sanitize(htmlContent || '');
+    return { __html: sanitizedContent };
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-slate-50">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          {/* Header Skeleton */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8 border-2 border-emerald-300">
+          <Card className="p-6 mb-8 bg-gradient-to-b from-emerald-50/70 to-white">
             <div className="flex items-center space-x-4">
               <Skeleton circle width={64} height={64} />
               <div className="flex-1">
@@ -54,7 +47,6 @@ function CoinsPage() {
               </div>
             </div>
 
-            {/* Market Stats Skeleton */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="p-4 rounded-lg border-2 border-emerald-300">
@@ -64,7 +56,6 @@ function CoinsPage() {
               ))}
             </div>
 
-            {/* Technical Info Skeleton */}
             <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300">
               <Skeleton width={200} height={24} className="mb-3" />
               <div className="grid grid-cols-2 gap-4">
@@ -72,7 +63,6 @@ function CoinsPage() {
               </div>
             </div>
 
-            {/* Developer Stats Skeleton */}
             <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300">
               <Skeleton width={200} height={24} className="mb-3" />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -83,29 +73,27 @@ function CoinsPage() {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
 
-          {/* Chart and Description Skeleton */}
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-2/3">
-              <div className="bg-white rounded-lg shadow-md p-6 border-2 border-emerald-300">
+              <Card className="p-6">
                 <Skeleton height={400} />
-              </div>
+              </Card>
             </div>
             <div className="w-full md:w-1/3">
-              <div className="bg-white rounded-lg shadow-md p-6 border-2 border-emerald-300">
+              <Card className="p-6">
                 <Skeleton width={150} height={24} className="mb-4" />
                 <Skeleton count={4} />
-              </div>
+              </Card>
             </div>
           </div>
 
-          {/* Markets Skeleton */}
           <div className="mt-8">
-            <div className="bg-white rounded-lg shadow-md p-6 border-2 border-emerald-300">
+            <Card className="p-6">
               <Skeleton width={150} height={24} className="mb-4" />
               <Skeleton height={200} />
-            </div>
+            </Card>
           </div>
         </div>
         <Footer />
@@ -114,37 +102,34 @@ function CoinsPage() {
   }
 
   if (isError) {
-    console.error('Error in component:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">
+      <div className="min-h-screen bg-slate-50">
+        <Navbar />
+        <div className="min-h-[60vh] flex items-center justify-center text-red-500">
           Error: {error?.message || 'Failed to load coin data'}
         </div>
+        <Footer />
       </div>
     );
   }
 
-  const renderSanitizedHTML = (htmlContent) => {
-    const sanitizedContent = DOMPurify.sanitize(htmlContent);
-    return { __html: sanitizedContent };
-  };
+  const marketData = coin.market_data || {};
+  const priceChange24h = marketData.price_change_percentage_24h;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8 px-4 md:px-0 fade-in-up">
         {/* Coin Header Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8 border-2 border-emerald-300">
+        <Card className="p-6 mb-8 bg-gradient-to-b from-emerald-50/70 to-white">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex items-center space-x-4">
-              <img
-                src={coin.image?.large}
-                alt={coin.name}
-                className="w-16 h-16 rounded-full border-2 border-emerald-300"
-              />
+              {coin.image?.large && (
+                <img src={coin.image.large} alt={coin.name} className="w-16 h-16 rounded-full border-2 border-emerald-300" />
+              )}
               <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl font-bold font-display">
                     {coin.name}
                     <span className="text-gray-500 ml-2">({coin.symbol?.toUpperCase()})</span>
                   </h1>
@@ -156,10 +141,8 @@ function CoinsPage() {
                     compact={true}
                   />
                 </div>
-                <div className="flex items-center mt-2">
-                  <div className="text-sm text-emerald-600">
-                    Rank #{coin.market_cap_rank}
-                  </div>
+                <div className="flex items-center flex-wrap mt-2">
+                  <div className="text-sm text-emerald-600 font-medium">Rank #{coin.market_cap_rank}</div>
                   {coin.genesis_date && (
                     <div className="text-sm text-emerald-600 ml-4">
                       Genesis: {new Date(coin.genesis_date).toLocaleDateString()}
@@ -167,166 +150,108 @@ function CoinsPage() {
                   )}
                 </div>
 
-                {/* Categories */}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {coin.categories?.map((category) => (
-                    <span key={category} className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full">
-                      {category}
-                    </span>
-                  ))}
-                </div>
+                {coin.categories?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {coin.categories.slice(0, 6).map((category) => (
+                      <Chip key={category}>{category}</Chip>
+                    ))}
+                  </div>
+                )}
 
-                {/* Social Stats */}
-                <div className="flex items-center gap-4 mt-2">
-                  {coin.community_data?.twitter_followers > 0 && (
+                {coin.community_data?.twitter_followers > 0 && (
+                  <div className="flex items-center gap-4 mt-2">
                     <span className="text-sm text-gray-600">
                       Twitter: {(coin.community_data.twitter_followers / 1000000).toFixed(1)}M followers
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Quick Links */}
-                <div className="flex gap-3 mt-2">
-                  {coin.links?.homepage[0] && (
-                    <a 
-                      href={coin.links.homepage[0]} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700"
-                    >
+                <div className="flex gap-3 mt-2 flex-wrap">
+                  {coin.links?.homepage?.[0] && (
+                    <a href={coin.links.homepage[0]} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 font-medium">
                       Website
                     </a>
                   )}
-                  {coin.links?.blockchain_site[0] && (
-                    <a 
-                      href={coin.links.blockchain_site[0]} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700"
-                    >
+                  {coin.links?.blockchain_site?.[0] && (
+                    <a href={coin.links.blockchain_site[0]} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 font-medium">
                       Explorer
                     </a>
                   )}
                   {coin.links?.whitepaper && (
-                    <a 
-                      href={coin.links.whitepaper} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700"
-                    >
+                    <a href={coin.links.whitepaper} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 font-medium">
                       Whitepaper
                     </a>
                   )}
                 </div>
               </div>
             </div>
-            
-            <div className="mt-4 md:mt-0">
-              <div className="text-3xl font-bold">
-                ${formatPrice(coin.market_data?.current_price?.usd)}
+
+            <div className="mt-4 md:mt-0 md:text-right">
+              <div className="text-3xl font-bold text-gray-900">
+                ${formatPrice(marketData.current_price?.usd)}
               </div>
-              <div className={`text-sm font-semibold ${
-                coin.market_data?.price_change_percentage_24h >= 0
-                  ? 'text-emerald-500'
-                  : 'text-red-500'
-              }`}>
-                {coin.market_data?.price_change_percentage_24h?.toFixed(2)}%
-                <span className="text-gray-500 ml-1">24h</span>
+              <div className="flex items-center justify-end mt-2">
+                <ChangeBadge value={priceChange24h} />
+                <span className="text-gray-500 text-sm ml-2">24h</span>
               </div>
             </div>
           </div>
 
           {/* Market Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="p-4 rounded-lg border-2 border-emerald-300">
-              <div className="text-sm text-emerald-600">Market Cap</div>
-              <div className="text-lg font-semibold">
-                ${formatNumber(coin.market_data?.market_cap?.usd)}
-              </div>
-            </div>
-            <div className="p-4 rounded-lg border-2 border-emerald-300">
-              <div className="text-sm text-emerald-600">24h Volume</div>
-              <div className="text-lg font-semibold">
-                ${formatNumber(coin.market_data?.total_volume?.usd)}
-              </div>
-            </div>
-            <div className="p-4 rounded-lg border-2 border-emerald-300">
-              <div className="text-sm text-emerald-600">Circulating Supply</div>
-              <div className="text-lg font-semibold">
-                {formatNumber(coin.market_data?.circulating_supply)} {coin.symbol?.toUpperCase()}
-              </div>
-            </div>
-            <div className="p-4 rounded-lg border-2 border-emerald-300">
-              <div className="text-sm text-emerald-600">Total Supply</div>
-              <div className="text-lg font-semibold">
-                {formatNumber(coin.market_data?.total_supply)} {coin.symbol?.toUpperCase()}
-              </div>
-            </div>
+            <StatCard label="Market Cap" value={`$${formatNumber(marketData.market_cap?.usd)}`} />
+            <StatCard label="24h Volume" value={`$${formatNumber(marketData.total_volume?.usd)}`} />
+            <StatCard label="Circulating Supply" value={`${formatNumber(marketData.circulating_supply)} ${coin.symbol?.toUpperCase()}`} />
+            <StatCard label="Total Supply" value={`${formatNumber(marketData.total_supply)} ${coin.symbol?.toUpperCase()}`} />
           </div>
 
           {/* Technical Info */}
-          <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300">
-            <h3 className="text-lg font-semibold mb-3">Technical Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {coin.hashing_algorithm && (
-                <div>
-                  <span className="text-gray-600">Hash Algorithm:</span>
-                  <span className="ml-2">{coin.hashing_algorithm}</span>
-                </div>
-              )}
-              {coin.block_time_in_minutes && (
-                <div>
-                  <span className="text-gray-600">Block Time:</span>
-                  <span className="ml-2">{coin.block_time_in_minutes} minutes</span>
-                </div>
-              )}
+          {(coin.hashing_algorithm || coin.block_time_in_minutes) && (
+            <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300 bg-white">
+              <h3 className="text-lg font-semibold mb-3">Technical Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {coin.hashing_algorithm && (
+                  <div>
+                    <span className="text-gray-600">Hash Algorithm:</span>
+                    <span className="ml-2 font-medium">{coin.hashing_algorithm}</span>
+                  </div>
+                )}
+                {coin.block_time_in_minutes && (
+                  <div>
+                    <span className="text-gray-600">Block Time:</span>
+                    <span className="ml-2 font-medium">{coin.block_time_in_minutes} minutes</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Developer Stats */}
-          <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300">
+          <div className="mt-6 p-4 rounded-lg border-2 border-emerald-300 bg-white">
             <h3 className="text-lg font-semibold mb-3">Developer Activity</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-gray-600">GitHub Stars</p>
-                <p className="font-semibold">{coin.developer_data?.stars?.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Forks</p>
-                <p className="font-semibold">{coin.developer_data?.forks?.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Contributors</p>
-                <p className="font-semibold">{coin.developer_data?.pull_request_contributors}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Total Issues</p>
-                <p className="font-semibold">{coin.developer_data?.total_issues}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Closed Issues</p>
-                <p className="font-semibold">{coin.developer_data?.closed_issues}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Recent Commits</p>
-                <p className="font-semibold">{coin.developer_data?.commit_count_4_weeks}</p>
-              </div>
+              <StatCard label="GitHub Stars" value={formatNumber(coin.developer_data?.stars)} />
+              <StatCard label="Forks" value={formatNumber(coin.developer_data?.forks)} />
+              <StatCard label="Contributors" value={formatNumber(coin.developer_data?.pull_request_contributors)} />
+              <StatCard label="Total Issues" value={formatNumber(coin.developer_data?.total_issues)} />
+              <StatCard label="Closed Issues" value={formatNumber(coin.developer_data?.closed_issues)} />
+              <StatCard label="Recent Commits" value={formatNumber(coin.developer_data?.commit_count_4_weeks)} />
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Chart and Description Section */}
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-2/3">
-            <div className="bg-white rounded-lg shadow-md p-6 border-2 border-emerald-300">
-              <h2 className="text-xl font-semibold mb-4">Price Chart</h2>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4 font-display">Price Chart</h2>
               <Chart coinId={web_slug} />
-            </div>
+            </Card>
           </div>
-          
+
           <div className="w-full md:w-1/3">
-            <div className="bg-white rounded-lg shadow-md p-6 border-2 border-emerald-300">
-              <h2 className="text-xl font-semibold mb-4">Description</h2>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4 font-display">Description</h2>
               <div
                 className={`text-gray-700 description-text ${isExpanded ? 'expanded' : 'collapsed'} overflow-hidden transition-all duration-300`}
                 dangerouslySetInnerHTML={renderSanitizedHTML(coin.description?.en)}
@@ -337,18 +262,18 @@ function CoinsPage() {
               >
                 {isExpanded ? 'Show Less' : 'Read More'}
               </button>
-            </div>
+            </Card>
           </div>
         </div>
 
         {/* Market Data */}
         <div className="mt-8">
-          <div className="bg-white rounded-lg shadow-md p-4 border-2 border-emerald-300">
-            <h2 className="text-xl font-semibold mb-4">Markets</h2>
+          <Card className="p-4">
+            <h2 className="text-xl font-semibold mb-4 font-display">Markets</h2>
             <div className="overflow-x-auto">
-              <MarketTable markets={coin.tickers} />
+              <MarketTable markets={coin.tickers || []} />
             </div>
-          </div>
+          </Card>
         </div>
       </div>
       <Footer />

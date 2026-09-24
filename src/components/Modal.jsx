@@ -1,20 +1,45 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-4 md:p-6 rounded-lg w-11/12 md:w-3/4 lg:w-1/2 max-w-2xl">
-        <h1 className='text-center text-xl md:text-2xl lg:text-3xl mb-2'>this api have limit request per minute please wait a minute </h1>
-        <h1 className='text-center text-xl md:text-2xl lg:text-3xl'>The probability of encountering a problem is high.</h1>
-        <button onClick={onClose} className="float-right text-gray-600 hover:text-gray-800 text-2xl md:text-3xl">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl leading-none"
+        >
           &times;
         </button>
+
+        <div className="mb-4">
+          <h1 className="text-lg md:text-xl font-bold text-center text-emerald-800">
+            API rate limit reached
+          </h1>
+          <p className="text-center text-gray-600 text-sm mt-2">
+            This API has a request limit per minute — please wait a minute and try again.
+            The probability of encountering a problem is high.
+          </p>
+        </div>
+
         {children}
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  children: PropTypes.node,
 };
 
 export default Modal;

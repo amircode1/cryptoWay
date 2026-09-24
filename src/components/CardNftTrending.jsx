@@ -1,5 +1,6 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import ChangeBadge from './ui/ChangeBadge';
 
 function CardNftTrending({ title, coins }) {
   if (!coins) {
@@ -11,25 +12,28 @@ function CardNftTrending({ title, coins }) {
   }
 
   return (
-    <div className="rounded-lg shadow-lg p-4 w-96 h-full">
-      <h2 className="font-semibold text-lg text-gray-900 mb-4">{title}</h2>
-      <ul className="space-y-2">
+    <div className="bg-white rounded-xl border-2 border-emerald-300 shadow-card p-4 w-full h-full flex flex-col transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5">
+      <h2 className="font-semibold text-lg text-gray-900 mb-4 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        {title}
+      </h2>
+      <ul className="space-y-2 flex-1">
         {coins.map((coin, index) => (
-          <li key={index} className="flex items-center justify-between text-gray-700 p-2 rounded-lg hover:bg-green-100">
-            <div className="flex items-center gap-2">
-              <img src={coin?.thumb} alt={`${coin?.name} icon`} className="w-6 h-6" />
-              <Link to={`/nft/${coin?.id}`} className="font-semibold text-gray-900 hover:text-emerald-500">{coin?.name}</Link>
+          <li
+            key={index}
+            className="flex items-center justify-between text-gray-700 p-2 rounded-lg hover:bg-emerald-50 transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {coin?.thumb && (
+                <img src={coin.thumb} alt={`${coin?.name} icon`} className="w-6 h-6 rounded-full" />
+              )}
+              <Link to={`/nft-list/${coin?.id}`} className="font-semibold text-gray-900 hover:text-emerald-500 truncate">
+                {coin?.name}
+              </Link>
             </div>
-            <div className="flex flex-col items-end">
-              <span className="font-medium text-gray-900">
-                {coin?.data.floor_price || 0}
-              </span>
-              <span className={`text-sm ${coin?.floor_price_24h_percentage_change > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {typeof coin?.floor_price_24h_percentage_change === 'number'
-                  ? coin?.floor_price_24h_percentage_change.toFixed(2)
-                  : 'N/A'}% 
-                {coin?.floor_price_24h_percentage_change > 0 ? '▲' : '▼'}
-              </span>
+            <div className="flex flex-col items-end shrink-0 gap-1">
+              <span className="font-medium text-gray-900 text-sm">{coin?.data?.floor_price ?? 'N/A'}</span>
+              <ChangeBadge value={coin?.floor_price_24h_percentage_change} />
             </div>
           </li>
         ))}
@@ -37,5 +41,10 @@ function CardNftTrending({ title, coins }) {
     </div>
   );
 }
+
+CardNftTrending.propTypes = {
+  title: PropTypes.string.isRequired,
+  coins: PropTypes.array,
+};
 
 export default CardNftTrending;

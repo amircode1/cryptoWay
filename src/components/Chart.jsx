@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -65,7 +66,7 @@ const Chart = ({ coinId }) => {
   const priceVolumeLabels = data?.prices?.map(([timestamp]) =>
     new Date(timestamp).toLocaleTimeString()
   );
-  const prices = data?.prices?.map(([_, price]) => price);
+  const prices = data?.prices?.map(([, price]) => price);
 
   const priceVolumeChartData = {
     labels: priceVolumeLabels || [],
@@ -153,6 +154,10 @@ const Chart = ({ coinId }) => {
       )}
     </div>
   );
+};
+
+Chart.propTypes = {
+  coinId: PropTypes.string.isRequired,
 };
 
 export default Chart;

@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const Sentiment = ({ sentiment = {}, compact = false }) => {
   const { bullish = 0, bearish = 0 } = sentiment;
@@ -111,6 +111,11 @@ const Sentiment = ({ sentiment = {}, compact = false }) => {
       </p>
     </div>
   );
+};
+
+Sentiment.propTypes = {
+  sentiment: PropTypes.object,
+  compact: PropTypes.bool,
 };
 
 export default Sentiment;

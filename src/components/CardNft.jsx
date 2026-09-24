@@ -1,34 +1,45 @@
-import React from 'react'
+import PropTypes from 'prop-types';
+import { formatUsd, percentClass } from '../utils/format';
 
 function CardNft({ nft }) {
-    // بررسی اگر داده‌ها به درستی بارگذاری شده‌اند
-    if (!nft) {
-        return <div>Loading...</div>;
-    }
+  if (!nft) {
+    return <div>Loading...</div>;
+  }
 
-    // Safe access to properties with defaults
-    const price = nft.floor_price || 'N/A';
-    const priceChange = nft.floor_price_24h_percentage_change || 'N/A';
+  const price = typeof nft.floor_price === 'number' ? nft.floor_price : null;
+  const priceChange = typeof nft.floor_price_24h_percentage_change === 'number' ? nft.floor_price_24h_percentage_change : null;
 
-    return (
-        <div className='relative'>
-            {/* بررسی صحت داده‌ها */}
-            {nft?.thumb && (
-                <img 
-                    className='w-20 h-20 absolute right-0 top-0' 
-                    src={nft?.thumb} 
-                    alt={nft?.name}
-                    onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/placeholder.png'; // Add a fallback image
-                    }}
-                />
-            )}
-            <h3 className="text-xl font-semibold">{nft?.name} ({nft?.symbol?.toUpperCase()})</h3>
-            <p>Price: ${typeof price === 'number' ? price.toLocaleString() : price}</p>
-            <p>24h Change: {typeof priceChange === 'number' ? priceChange.toFixed(2) : priceChange}%</p>
-        </div>
-    );
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h3 className="text-lg font-semibold text-gray-900 truncate">
+          {nft.name} <span className="text-sm text-gray-500">({nft.symbol?.toUpperCase()})</span>
+        </h3>
+        <p className="text-sm text-gray-500 mt-2">Floor Price</p>
+        <p className="text-xl font-bold text-gray-900">{formatUsd(price)}</p>
+        {priceChange !== null && (
+          <p className={`text-sm font-medium ${percentClass(priceChange)}`}>
+            {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}% (24h)
+          </p>
+        )}
+      </div>
+      {nft.thumb && (
+        <img
+          className="w-14 h-14 rounded-full shrink-0"
+          src={nft.thumb}
+          alt={nft.name}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
+    </div>
+  );
 }
+
+CardNft.propTypes = {
+  nft: PropTypes.object,
+};
 
 export default CardNft;

@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { FaSearch } from 'react-icons/fa';
 import SearchResults from './SearchResults';
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -17,13 +18,12 @@ function Search() {
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
 
-  // Use the object form for useQuery
   const { data: searchResults, isLoading, isError, error } = useQuery({
     queryKey: ['searchResults', searchTerm],
     queryFn: () => fetchSearchResults(searchTerm),
-    enabled: !!searchTerm, // Request is only sent when searchTerm has a value
-    staleTime: 60000, // Data freshness time
-    cacheTime: 300000, // Data storage time in cache
+    enabled: !!searchTerm,
+    staleTime: 60000,
+    gcTime: 300000,
   });
 
   const handleSearch = (event) => {
@@ -46,20 +46,20 @@ function Search() {
 
   return (
     <div ref={searchRef} className="relative">
+      <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none" size={14} />
       <input
         type="text"
         placeholder="Search..."
         value={searchTerm}
         onChange={handleSearch}
-        className="w-full px-4 py-2 rounded-lg border-2 border-emerald-300 focus:outline-none focus:border-green-500"
+        className="w-full pl-10 pr-4 py-2 rounded-full border-2 border-emerald-300 bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
       />
       {showResults && (
-        <div className="absolute top-full left-0 right-0 mt-2 max-w-96 bg-white shadow-lg rounded-lg z-50">
-          {/* Display search results */}
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl rounded-xl z-50">
           {isLoading ? (
-            <p>Loading...</p>
+            <p className="p-4 text-gray-500 text-sm">Loading...</p>
           ) : isError ? (
-            <p>Error: {error.message}</p>
+            <p className="p-4 text-red-500 text-sm">Error: {error.message}</p>
           ) : (
             <SearchResults results={searchResults} />
           )}

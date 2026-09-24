@@ -2,9 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 const apiUrl = import.meta.env.VITE_API_URL;
-const apiKey = import.meta.env.VITE_API_KEY;
-const apiUrlCmp = import.meta.env.VITE_API_URL_CMP;
-const apiKeyCmp = import.meta.env.VITE_API_KEY_CMP;
+
+const getApiErrorMessage = (error, fallback) => error.response?.data?.message || fallback;
 
 // Fetcher Function for market cap data
 const fetchMarketCapData = async () => {
@@ -32,31 +31,29 @@ export const useMarketCapQuery = () => {
     queryKey: ['marketCapData'],
     queryFn: fetchMarketCapData,
     staleTime: 60000, // 1 minute
-    cacheTime: 300000, // 5 minutes
+    gcTime: 300000, // 5 minutes
     retry: 2,
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });
 };
 
-// Fetcher Function for prices data
-const fetchPrices = async () => {
-  const response = await axios.get(`${apiUrl}/price`, {
-    params: {
-      currency: 'usd',
-      accept: 'application/json',
-    },
+// Fetcher for global market data (total market cap, volume, dominance)
+const fetchGlobalData = async () => {
+  const response = await axios.get(`${apiUrl}/global`, {
+    params: { accept: 'application/json' },
   });
-  return response.data;
+  return response.data?.data;
 };
 
-// usePricesQuery hook
-export const usePricesQuery = () => {
+// useGlobalDataQuery hook
+export const useGlobalDataQuery = () => {
   return useQuery({
-    queryKey: ['pricesData'],
-    queryFn: fetchPrices,
-    staleTime: 30000, // 30 seconds
-    retry: 1,
+    queryKey: ['globalData'],
+    queryFn: fetchGlobalData,
+    staleTime: 60000,
+    gcTime: 300000,
+    retry: 2,
   });
 };
 
@@ -81,7 +78,7 @@ export const useCoinsListQuery = (page) => {
     queryFn: () => fetchCoinsList(page),
     enabled: !!page, // Enable only if page is truthy
     staleTime: 60000,
-    cacheTime: 300000,
+    gcTime: 300000,
     retry: 2,
     retryDelay: (attemptNumber) => Math.min(1000 * 2 ** attemptNumber, 30000), // Exponential backoff
   });
@@ -103,7 +100,7 @@ export const useTrendingCoinsQuery = () => {
     queryKey: ['/search/trending'],
     queryFn: fetchTrendingCoins,
     staleTime: 60000, // 1 minute
-    cacheTime: 300000, // 5 minutes
+    gcTime: 300000, // 5 minutes
     retry: 2,
   });
 };
@@ -118,7 +115,7 @@ const fetchCategoriesData = async () => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error fetching categories');
+    throw new Error(getApiErrorMessage(error, 'Error fetching categories'), { cause: error });
   }
 };
 
@@ -128,7 +125,7 @@ export const useCategoriesQuery = () => {
     queryKey: ['categories'],
     queryFn: fetchCategoriesData,
     staleTime: 120000, // 2 minutes
-    cacheTime: 600000, // 10 minutes
+    gcTime: 600000, // 10 minutes
     retry: 2,
     onError: (error) => {
       console.error('Failed to fetch categories:', error.message);
@@ -152,7 +149,7 @@ export const fetchExchanges = async (page) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching exchanges:', error);
-    throw new Error(error.response?.data?.message || 'Error fetching exchanges');
+    throw new Error(getApiErrorMessage(error, 'Error fetching exchanges'), { cause: error });
   }
 };
 
@@ -162,7 +159,7 @@ export const useExchangesQuery = (page) => {
     queryKey: ['exchanges', page],
     queryFn: () => fetchExchanges(page),
     staleTime: 120000, // 2 minutes
-    cacheTime: 600000, // 10 minutes
+    gcTime: 600000, // 10 minutes
     retry: 2,
     enabled: !!page,
     onError: (error) => {
@@ -183,7 +180,7 @@ const fetchDerivatives = async (page) => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error fetching categories');
+    throw new Error(getApiErrorMessage(error, 'Error fetching categories'), { cause: error });
   }
 };
 
@@ -192,7 +189,7 @@ export const useDerivativesQuery = (page) => {
     queryKey: ['derivatives',page],
     queryFn : () => fetchDerivatives(page),
     staleTime: 120000, // 2 minutes
-    cacheTime: 600000, // 10 minutes
+    gcTime: 600000, // 10 minutes
     retry: 2,
     onError: (error) => {
       console.error('Failed to fetch categories:', error.message);
@@ -212,7 +209,7 @@ const fetchNFTData = async (page) => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Error fetching NFTs');
+    throw new Error(getApiErrorMessage(error, 'Error fetching NFTs'), { cause: error });
   }
 };
 
@@ -222,7 +219,7 @@ export const useNFTQuery = (page) => {
     queryKey: ['nfts', page],
     queryFn: () => fetchNFTData(page),
     staleTime: 120000, // 2 minutes
-    cacheTime: 600000, // 10 minutes
+    gcTime: 600000, // 10 minutes
     retry: 2,
     onError: (error) => {
       console.error('Failed to fetch NFTs:', error.message);
@@ -238,16 +235,18 @@ export const useNFTQuery = (page) => {
       },
     });
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error(`Error fetching details for NFT: ${id}`);
   }
 };
 
 export const useNftDetailsQuery = (id) => {
-  return useQuery(['nftDetails', id], () => fetchNftDetails(id), {
+  return useQuery({
+    queryKey: ['nftDetails', id],
+    queryFn: () => fetchNftDetails(id),
     enabled: !!id, // فقط زمانی که id موجود باشد، درخواست زده شود
     staleTime: 120000,
-    cacheTime: 600000,
+    gcTime: 600000,
     retry: 2,
     onError: (error) => {
       console.error(`Failed to fetch details for NFT ${id}:`, error.message);
@@ -274,7 +273,7 @@ const fetchCoins = async (web_slug) => {
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred while fetching data.';
     console.error('Error in fetchCoins:', error);
-    throw new Error(errorMessage);
+    throw new Error(errorMessage, { cause: error });
   }
 };
 
@@ -284,7 +283,7 @@ export const useCoinsQuery = (web_slug) => {
     queryKey: ['coinsPage', web_slug],
     queryFn: () => fetchCoins(web_slug),
     staleTime: 120000,
-    cacheTime: 600000,
+    gcTime: 600000,
     retry: 2,
     enabled: !!web_slug,
     onError: (error) => {
@@ -321,7 +320,7 @@ const fetchChartData = async (coinId, chartType, timeRange) => {
     const errorMessage =
       error.response?.data?.message || "An error occurred while fetching chart data.";
     console.error(errorMessage);
-    throw new Error(errorMessage);
+    throw new Error(errorMessage, { cause: error });
   }
 };
 
@@ -331,7 +330,7 @@ export const useChartQuery = (coinId, chartType, timeRange) => {
     queryKey: ["chartData", coinId, chartType, timeRange],
     queryFn: () => fetchChartData(coinId, chartType, timeRange),
     staleTime: 120000, // 2 minutes
-    cacheTime: 600000, // 10 minutes
+    gcTime: 600000, // 10 minutes
     retry: 2,
     onError: (error) => {
       console.error("Failed to fetch chart data:", error.message);
